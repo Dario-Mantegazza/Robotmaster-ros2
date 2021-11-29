@@ -1,8 +1,7 @@
 version: '3'
 services:
-    ros2-interactive:
-      context: .
-      file: Dockerfile
+    ros2:
+      build: .
       network_mode: host
       volumes:
         - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
