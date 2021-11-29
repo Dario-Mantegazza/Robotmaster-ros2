@@ -6,6 +6,8 @@ RUN apt-get update && apt-get install -y \
     ros-galactic-joy \
     ros-galactic-joy-teleop \
     ros-galactic-joy-linux \
+    ros-galactic-image-transport-plugins \
+    # ros-galactic-image-view\
     libopus-dev \
     && rm -rf /var/lib/apt/lists/*
 
@@ -37,3 +39,10 @@ RUN cd /ros_ws/src && \
   source /ros_entrypoint.sh && \
   colcon build --merge-install --packages-select robomaster_ros robomaster_msgs robomaster_description && \
   rm -r build log
+
+RUN cd /ros_ws/src && \
+    git clone  https://github.com/ros-perception/image_transport_plugins.git --branch ros2 && \
+    cd .. && \
+    source /ros_entrypoint.sh && \
+    colcon build --merge-install --packages-up-to image_transport_plugins && \
+    rm -r build log
