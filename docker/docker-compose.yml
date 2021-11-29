@@ -1,0 +1,11 @@
+version: '3'
+services:
+    ros2-interactive:
+      context: .
+      file: Dockerfile
+      network_mode: host
+      volumes:
+        - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+      environment:
+        - DISPLAY
+        - QT_X11_NO_MITSHM=1
