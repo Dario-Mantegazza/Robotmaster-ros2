@@ -3,8 +3,23 @@ services:
     ros2-dario:
       build: .
       network_mode: host
+      pid: host
       volumes:
         - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+      # devices:
+        # - "/dev/input/js0:/dev/input/js0"
+      environment:
+        - DISPLAY
+        - QT_X11_NO_MITSHM=1
+    reader:
+      build: .
+      network_mode: host
+      pid: host
+      volumes:
+        - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+        - "/media/manted/manted_data/data/rm-onboard/bags:/data:rw"
+      # devices:
+        # - "/dev/input/js0:/dev/input/js0"
       environment:
         - DISPLAY
         - QT_X11_NO_MITSHM=1

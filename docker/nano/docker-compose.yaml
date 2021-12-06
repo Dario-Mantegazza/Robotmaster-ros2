@@ -1,0 +1,46 @@
+version: '3'
+services:
+  robomaster_ros:
+    image: jeguzzi/robomaster_ros:galactic
+    build:
+       context: .
+       dockerfile: Dockerfile
+    network_mode: host
+    privileged: true
+    runtime: nvidia
+    command: ros2 launch robomaster_ros ep.launch conn_type:=rndis audio_raw:=false audio_opus:=false video_compressed:=true
+  teleop:
+    privileged: true
+    image: jeguzzi/robomaster_ros:galactic
+    network_mode: host
+    command: ros2 launch robomaster_ros teleop.launch model:=s1 
+  main:
+    privileged: true
+    image: jeguzzi/robomaster_ros:galactic
+    network_mode: host
+    volumes:
+      - ./cyclonedds.xml:/cyclonedds.xml
+    environment:
+      - CYCLONEDDS_URI=file:///cyclonedds.xml
+    command: ros2 launch robomaster_ros main.launch model:=ep conn_type:=rndis video_compressed:=false video_h264:=false audio_raw:=false audio_opus:=false  video_raw:=false with_model_description:=false gripper:=false arm:=false
+  record:
+    image: jeguzzi/robomaster_ros:galactic
+    command: /bin/bash -c "cd /bags && ros2 bag record /odom /camera/image_h264 /camera/color/image_raw/compressed /camera/depth/image_rect_raw/compressedDepth "
+    network_mode: host
+    volumes:
+      - /media/ssd-dario/data/rm-onboard/bags:/bags:rw 
+  rs-dario:
+    image: realsense_ros:galactic
+    build:
+        context: .
+        dockerfile: Dockerfile
+    network_mode: host
+    privileged: true
+    volumes:
+      - ./cyclonedds.xml:/cyclonedds.xml
+      - ./realsense-configs.json:/realsense-configs.json
+    environment:
+      - CYCLONEDDS_URI=file:///cyclonedds.xml
+    command: ros2 launch realsense2_camera rs_launch.py json_file_path:=/realsense-configs.json
+
+

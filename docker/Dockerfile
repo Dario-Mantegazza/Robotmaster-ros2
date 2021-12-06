@@ -41,7 +41,7 @@ RUN cd /ros_ws/src && \
   rm -r build log
 
 RUN cd /ros_ws/src && \
-    git clone  https://github.com/ros-perception/image_transport_plugins.git --branch ros2 && \
+    git clone https://github.com/p0wdrdotcom/image_transport_plugins.git -b foxy-devel && \
     cd .. && \
     source /ros_entrypoint.sh && \
     colcon build --merge-install --packages-up-to image_transport_plugins && \
