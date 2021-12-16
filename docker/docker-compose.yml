@@ -6,11 +6,13 @@ services:
       pid: host
       volumes:
         - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
-      # devices:
-        # - "/dev/input/js0:/dev/input/js0"
+        - ./cyclonedds.xml:/cyclonedds.xml
       environment:
+        - CYCLONEDDS_URI=file:///cyclonedds.xml
         - DISPLAY
         - QT_X11_NO_MITSHM=1
+
+
     reader:
       build: .
       network_mode: host
