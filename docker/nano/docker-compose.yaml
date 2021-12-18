@@ -1,20 +1,7 @@
 version: '3'
 services:
-  robomaster_ros:
-    image: jeguzzi/robomaster_ros:galactic
-    build:
-       context: .
-       dockerfile: Dockerfile
-    network_mode: host
-    privileged: true
-    runtime: nvidia
-    command: ros2 launch robomaster_ros ep.launch conn_type:=rndis audio_raw:=false audio_opus:=false video_compressed:=true
-  teleop:
-    privileged: true
-    image: jeguzzi/robomaster_ros:galactic
-    network_mode: host
-    command: ros2 launch robomaster_ros teleop.launch model:=s1 
-  main:
+
+  main-50hz:
     privileged: true
     image: jeguzzi/robomaster_ros:galactic
     network_mode: host
@@ -22,13 +9,55 @@ services:
       - ./cyclonedds.xml:/cyclonedds.xml
     environment:
       - CYCLONEDDS_URI=file:///cyclonedds.xml
-    command: ros2 launch robomaster_ros main.launch model:=ep conn_type:=rndis video_compressed:=false video_h264:=false audio_raw:=false audio_opus:=false  video_raw:=false with_model_description:=false gripper:=false arm:=false
-  record:
+    command: ros2 launch robomaster_ros main.launch model:=ep chassis_rate:=50 conn_type:=rndis video_compressed:=false video_h264:=false audio_raw:=false audio_opus:=false video_raw:=false with_model_description:=false gripper:=false arm:=false
+
+  record-compressed-rolling:
+    image: record:rolling
+    build:
+        context: .
+        dockerfile: Dockerfile
+    network_mode: host
+    privileged: true
+    volumes:
+      - ./cyclonedds.xml:/cyclonedds.xml
+      - /media/dario-ssd/data/rm-onboard/bags:/bags:rw 
+    environment:
+      - CYCLONEDDS_URI=file:///cyclonedds.xml
+    command: /bin/bash -c "cd /bags && ros2 bag record  /camera/color/camera_info /camera/color/image_raw/compressed /camera/depth/metadata /camera/color/metadata /camera/depth/camera_info  /camera/depth/image_rect_raw/compressedDepth /odom /state /imu"
+
+  record-mixed-rolling:
+    image: record:rolling
+    build:
+        context: .
+        dockerfile: Dockerfile
+    network_mode: host
+    privileged: true
+    volumes:
+      - ./cyclonedds.xml:/cyclonedds.xml
+      - /media/dario-ssd/data/rm-onboard/bags:/bags:rw 
+    environment:
+      - CYCLONEDDS_URI=file:///cyclonedds.xml
+    command: /bin/bash -c "cd /bags && ros2 bag record  /camera/color/camera_info /camera/color/image_raw/compressed /camera/depth/camera_info  /camera/depth/image_rect_raw /odom /imu"
+
+  record-mixed:
     image: jeguzzi/robomaster_ros:galactic
-    command: /bin/bash -c "cd /bags && ros2 bag record /odom /camera/image_h264 /camera/color/image_raw/compressed /camera/depth/image_rect_raw/compressedDepth "
+    command: /bin/bash -c "cd /bags && ros2 bag record  /camera/color/camera_info /camera/color/image_raw/compressed /camera/depth/camera_info  /camera/depth/image_rect_raw /odom /imu"
     network_mode: host
     volumes:
-      - /media/ssd-dario/data/rm-onboard/bags:/bags:rw 
+      - /media/dario-ssd/data/rm-onboard/bags:/bags:rw 
+  record-raw:
+    image: jeguzzi/robomaster_ros:galactic
+    command: /bin/bash -c "cd /bags && ros2 bag record  /camera/color/camera_info /camera/color/image_raw /camera/depth/camera_info  /camera/depth/image_rect_raw /odom /imu"
+    network_mode: host
+    volumes:
+      - /media/dario-ssd/data/rm-onboard/bags:/bags:rw 
+  record-compressed:
+    image: jeguzzi/robomaster_ros:galactic
+    command: /bin/bash -c "cd /bags && ros2 bag record  /camera/color/camera_info /camera/color/image_raw/compressed /camera/depth/camera_info  /camera/depth/image_rect_raw/compressedDepth  /odom /imu"
+    network_mode: host
+    volumes:
+      - /media/dario-ssd/data/rm-onboard/bags:/bags:rw 
+
   rs-dario:
     image: realsense_ros:galactic
     build:
@@ -41,6 +70,20 @@ services:
       - ./realsense-configs.json:/realsense-configs.json
     environment:
       - CYCLONEDDS_URI=file:///cyclonedds.xml
+    # command: ros2 launch realsense2_camera color_width:=848 color_height:=480 color_fps:=15.0 json_file_path:=/realsense-configs.json
+    command: ros2 launch realsense2_camera rs_launch.py color_width:=848 color_height:=480 color_fps:=30.0 json_file_path:=/realsense-configs.json
+
+    
+  rs-dario-rolling:
+    image: realsense_ros:rolling
+    network_mode: host
+    privileged: true
+    volumes:
+      - ./cyclonedds.xml:/cyclonedds.xml
+      - ./realsense-configs.json:/realsense-configs.json
+    environment:
+      - CYCLONEDDS_URI=file:///cyclonedds.xml
+      - ROS_LOCALHOST_ONLY=1
     command: ros2 launch realsense2_camera rs_launch.py json_file_path:=/realsense-configs.json
 
 

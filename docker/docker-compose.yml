@@ -6,9 +6,9 @@ services:
       pid: host
       volumes:
         - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
-        - ./cyclonedds.xml:/cyclonedds.xml
+        # - ./cyclonedds.xml:/cyclonedds.xml
       environment:
-        - CYCLONEDDS_URI=file:///cyclonedds.xml
+        # - CYCLONEDDS_URI=file:///cyclonedds.xml
         - DISPLAY
         - QT_X11_NO_MITSHM=1
 
